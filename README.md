@@ -2,123 +2,260 @@
 
 A computational implementation and verification of the quantum teleportation protocol using Qiskit.
 
-This project demonstrates how a single-qubit quantum state can be transferred to another qubit using entanglement and coherent quantum operations. The protocol is simulated using an ideal statevector model, and the receiver's state is compared with the original input using quantum-state fidelity.
+This project studies quantum teleportation through ideal statevector simulation. The protocol is tested using several single-qubit input states, and the state obtained by the receiver is compared with the original input state using quantum-state fidelity.
+
+The implementation uses a **coherent, measurement-free formulation** of the teleportation circuit for computational verification. This allows the complete quantum state to be inspected directly during simulation.
 
 ---
 
 ## Overview
 
-Quantum teleportation is a fundamental protocol in quantum information that allows an unknown quantum state to be transferred from one qubit to another using a shared entangled state and quantum operations.
+Quantum teleportation is a fundamental protocol in quantum information that allows an unknown quantum state to be transferred from one qubit to another using shared entanglement and local quantum operations.
 
-The protocol does **not** physically transmit the quantum state itself. Instead, quantum entanglement and local operations allow the receiver to reconstruct the original state.
+The protocol does **not** physically transmit the original quantum state through the communication channel. Instead, the sender and receiver share an entangled pair, and quantum operations transform the receiver's qubit so that it reproduces the original state.
 
-The standard operational teleportation protocol involves:
+The standard operational teleportation protocol consists of:
 
-1. Preparing the input quantum state
-2. Creating a shared Bell pair
-3. Performing a Bell-basis measurement
-4. Communicating the measurement results classically
-5. Applying conditional corrections at the receiver
+1. Preparing the quantum state to be teleported.
+2. Creating an entangled Bell pair shared between sender and receiver.
+3. Performing a Bell-basis measurement.
+4. Communicating the measurement results classically.
+5. Applying conditional corrections at the receiver.
 
-This project uses a **coherent, measurement-free formulation** of the teleportation circuit. This formulation is useful for computational verification because the complete quantum state remains available for statevector analysis.
-
-The simulation assumes an ideal, noiseless quantum system.
+In this project, the measurement and classical feed-forward stages are represented using a **coherent equivalent formulation**. This is useful for statevector-based computational verification because the complete quantum state remains available for analysis.
 
 ---
 
-## Protocol
+## Physical Setup
 
-The circuit uses three qubits:
+The simulation uses three qubits:
 
-| Qubit   | Role                                       |
-| ------- | ------------------------------------------ |
-| Qubit 0 | Input quantum state to be teleported       |
-| Qubit 1 | Sender's half of the entangled Bell pair   |
-| Qubit 2 | Receiver's half of the entangled Bell pair |
+| Qubit   | Role                                              |
+| ------- | ------------------------------------------------- |
+| Qubit 0 | Input qubit containing the state to be teleported |
+| Qubit 1 | Sender's half of the shared Bell pair             |
+| Qubit 2 | Receiver's half of the shared Bell pair           |
 
-The main operations are:
+The overall process can be represented conceptually as:
 
-1. Prepare the input state on qubit 0.
-2. Create a Bell pair between qubits 1 and 2.
-3. Apply the Bell-basis transformation to qubits 0 and 1.
-4. Apply coherent correction operations to qubit 2.
-5. Simulate the resulting three-qubit state.
-6. Trace out qubits 0 and 1.
-7. Compare the receiver's reduced state with the original input state using fidelity.
+```text
+Input state
+    │
+    ▼
+ Qubit 0
+    │
+    │
+    ├───────────────┐
+    │               │
+    ▼               ▼
+Qubit 1 ═════════ Qubit 2
+       Bell pair
+          │
+          │
+          ▼
+      Receiver
+```
+
+Qubits 1 and 2 are first prepared in an entangled Bell state. The input qubit is then combined with the sender's entangled qubit through the teleportation circuit.
 
 ---
 
-## Input States
+## Teleportation Protocol
 
-The teleportation protocol is tested using four standard single-qubit states:
+The coherent circuit follows these main stages.
 
-| State | Description       | Basis / Property          |                      |                                         |         |
-| ----- | ----------------- | ------------------------- | -------------------- | --------------------------------------- | ------- |
-| $     | 0\rangle$         | Computational basis state | Z-basis              |                                         |         |
-| $     | 1\rangle$         | Computational basis state | Z-basis              |                                         |         |
-| $     | +\rangle = \frac{ | 0\rangle +                | 1\rangle}{\sqrt{2}}$ | Equal superposition                     | X-basis |
-| $     | -\rangle = \frac{ | 0\rangle -                | 1\rangle}{\sqrt{2}}$ | Equal superposition with relative phase | X-basis |
+### 1. Prepare the input state
 
-Testing both computational-basis and superposition states provides a more meaningful verification than testing a single input state.
+A single-qubit state is prepared on qubit 0.
+
+The project tests four standard states:
+
+| State | Physical meaning  | Category                  |                      |                                                  |                     |
+| ----- | ----------------- | ------------------------- | -------------------- | ------------------------------------------------ | ------------------- |
+| $     | 0\rangle$         | Computational basis state | Basis state          |                                                  |                     |
+| $     | 1\rangle$         | Computational basis state | Basis state          |                                                  |                     |
+| $     | +\rangle = \frac{ | 0\rangle +                | 1\rangle}{\sqrt{2}}$ | Equal superposition with positive relative phase | Superposition state |
+| $     | -\rangle = \frac{ | 0\rangle -                | 1\rangle}{\sqrt{2}}$ | Equal superposition with negative relative phase | Superposition state |
+
+These states allow the experiment to test both computational-basis states and phase-sensitive superposition states.
+
+### 2. Create the Bell pair
+
+Qubits 1 and 2 are prepared in the Bell state
+
+$$
+|\Phi^+\rangle =
+\frac{|00\rangle + |11\rangle}{\sqrt{2}}.
+$$
+
+This is achieved using a Hadamard gate followed by a controlled-NOT gate:
+
+```text
+H
+│
+Qubit 1 ─────●────
+             │
+Qubit 2 ─────X────
+```
+
+### 3. Apply the Bell-basis transformation
+
+The input qubit and the sender's half of the Bell pair are transformed using controlled-NOT and Hadamard operations.
+
+### 4. Apply coherent corrections
+
+The receiver's qubit is corrected using controlled quantum operations.
+
+These operations form a coherent equivalent of the conditional corrections that would normally depend on the classical measurement results in the standard teleportation protocol.
+
+### 5. Analyze the receiver's state
+
+The final statevector is obtained from the ideal simulation.
+
+Qubits 0 and 1 are then traced out to obtain the receiver's reduced density matrix.
 
 ---
 
 ## Fidelity Verification
 
-The quality of the teleportation is evaluated using quantum-state fidelity.
+To determine whether teleportation succeeded, the receiver's final state is compared with the original input state.
 
-For the input state $\rho$ and the receiver's reduced state $\sigma$, the fidelity is written as:
+The project uses quantum-state fidelity:
 
 $$
 F(\rho,\sigma)
 $$
 
-For an ideal noiseless teleportation process:
+where $\rho$ represents the original input state and $\sigma$ represents the receiver's final state.
+
+For a pure input state $|\psi\rangle$, the fidelity can be expressed as:
 
 $$
-F \approx 1
+F =
+\langle\psi|\rho_{\text{receiver}}|\psi\rangle.
 $$
 
-A fidelity of 1 indicates that the receiver's state is identical to the original input state.
+The fidelity satisfies:
 
-Small numerical deviations from exactly 1 can occur because of floating-point precision.
+$$
+0 \leq F \leq 1.
+$$
+
+A value of
+
+$$
+F = 1
+$$
+
+indicates identical quantum states, while lower values indicate increasing disagreement between the original and reconstructed states.
+
+Because this project uses an ideal noiseless simulation, the expected fidelity for the tested states is numerically equal or extremely close to 1, with any tiny deviation attributable to floating-point precision.
+
+---
+
+## Experiments
+
+The notebook evaluates the teleportation protocol for four different input states.
+
+| Experiment | Input state | What is being tested |                                Expected ideal fidelity |             |
+| ---------- | ----------- | -------------------- | -----------------------------------------------------: | ----------- |
+| 1          | $           | 0\rangle$            |           Teleportation of a computational-basis state | $\approx 1$ |
+| 2          | $           | 1\rangle$            |   Teleportation of the other computational-basis state | $\approx 1$ |
+| 3          | $           | +\rangle$            |          Teleportation of an equal superposition state | $\approx 1$ |
+| 4          | $           | -\rangle$            | Teleportation of a phase-sensitive superposition state | $\approx 1$ |
+
+Testing multiple states is useful because successful teleportation should not depend on the particular input state chosen.
 
 ---
 
 ## Results
 
-The ideal statevector simulation is expected to produce fidelity values numerically equal or extremely close to 1 for all four tested states.
+The ideal statevector simulation is expected to produce a teleportation fidelity numerically equal or extremely close to:
 
-| Input State | Expected Fidelity | Interpretation |                                                          |
-| ----------- | ----------------: | -------------- | -------------------------------------------------------- |
-| $           |         0\rangle$ | $\approx 1$    | Input state reproduced at receiver                       |
-| $           |         1\rangle$ | $\approx 1$    | Input state reproduced at receiver                       |
-| $           |         +\rangle$ | $\approx 1$    | Superposition state reproduced at receiver               |
-| $           |         -\rangle$ | $\approx 1$    | Superposition with relative phase reproduced at receiver |
+$$
+F = 1.
+$$
 
-The notebook calculates these values directly from the simulated quantum states rather than assuming the result.
-
----
-
-## Visualization
-
-The experiment also generates a comparison of the teleportation fidelity for the four input states.
+The notebook calculates the fidelity independently for each tested input state and visualizes the results.
 
 ![Teleportation Fidelity](results/fidelity_comparison.png)
 
+The result demonstrates that, under ideal noiseless simulation conditions, the receiver's reduced state reproduces the original input state.
+
 ---
 
-## Implementation
+## Mathematical Background
 
-The project is implemented using:
+A general single-qubit state can be written as
+
+$$
+|\psi\rangle =
+\alpha|0\rangle + \beta|1\rangle,
+$$
+
+where
+
+$$
+|\alpha|^2 + |\beta|^2 = 1.
+$$
+
+The purpose of quantum teleportation is to reproduce this state on the receiver's qubit without directly transmitting the physical qubit containing the original state.
+
+The protocol relies on entanglement and quantum correlations rather than transmitting the unknown state itself.
+
+The shared Bell state used in this implementation is:
+
+$$
+|\Phi^+\rangle =
+\frac{|00\rangle + |11\rangle}{\sqrt{2}}.
+$$
+
+The complete teleportation procedure transforms the joint system such that the receiver can recover the original state after the appropriate operations.
+
+---
+
+## Simulation Model
+
+This project intentionally uses an idealized computational model.
+
+### Assumptions
+
+* No gate errors
+* No measurement errors
+* No decoherence
+* No channel loss
+* No environmental noise
+* Perfect state preparation
+* Perfect quantum operations
+* Exact statevector simulation apart from numerical floating-point precision
+
+These assumptions make it possible to verify the fundamental teleportation mechanism before introducing realistic imperfections.
+
+---
+
+## Why Statevector Simulation?
+
+Statevector simulation provides direct access to the complete quantum state of the simulated system.
+
+This makes it particularly useful for:
+
+* Inspecting quantum states
+* Calculating reduced density matrices
+* Verifying entanglement-based protocols
+* Computing state fidelity
+* Studying ideal quantum circuits before introducing noise
+
+The approach is therefore suitable for this project as a first computational verification of quantum teleportation.
+
+---
+
+## Technologies
 
 * **Python** — programming language
 * **Qiskit** — quantum circuit construction and simulation
 * **NumPy** — numerical computation
-* **Matplotlib** — result visualization
-* **Jupyter** — interactive computational notebook
-
-The simulation uses Qiskit's statevector representation to examine the quantum state produced by the circuit.
+* **Matplotlib** — visualization
+* **Jupyter Notebook** — interactive experiment environment
 
 ---
 
@@ -138,88 +275,138 @@ quantum-teleportation/
 
 ---
 
-## Getting Started
+## Installation
 
-### 1. Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/quantum-teleportation.git
 cd quantum-teleportation
 ```
 
-### 2. Create a virtual environment
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-### 3. Activate the environment
+On Windows:
 
-**Windows:**
-
-```bash
+```powershell
 .venv\Scripts\activate
 ```
 
-**Linux / macOS:**
-
-```bash
-source .venv/bin/activate
-```
-
-### 4. Install dependencies
+Install the dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Launch Jupyter
+Launch Jupyter:
 
 ```bash
 jupyter notebook
 ```
 
-Open:
+Then open:
 
 ```text
 quantumteleportation.ipynb
 ```
 
-and run the notebook from beginning to end.
+---
+
+## Reproducibility
+
+The experiment is designed to be reproducible from the included notebook and dependency list.
+
+The complete workflow consists of:
+
+```text
+Prepare input state
+        ↓
+Create Bell pair
+        ↓
+Apply teleportation circuit
+        ↓
+Simulate final state
+        ↓
+Trace out sender qubits
+        ↓
+Obtain receiver state
+        ↓
+Calculate fidelity
+        ↓
+Compare results
+```
 
 ---
 
-## Assumptions
+## Limitations
 
-The current experiment uses an idealized quantum system.
+The current implementation focuses on ideal statevector simulation and therefore does not represent the imperfections of a physical quantum communication system.
 
-The simulation does not currently model:
+In particular, it does not currently model:
 
-* Gate errors
+* Quantum channel loss
+* Gate noise
 * Decoherence
+* Detector imperfections
 * Measurement errors
-* Qubit relaxation
-* Qubit dephasing
-* Channel noise
-* Hardware imperfections
+* Classical communication delays
+* Real hardware limitations
 
-Therefore, the results represent an ideal theoretical simulation rather than the performance of a physical quantum device.
+The coherent formulation is also intended for computational verification rather than as a direct replacement for the standard operational measurement-based teleportation protocol.
 
 ---
 
 ## Future Work
 
-Possible extensions of the project include:
+Possible extensions include:
 
-* Testing arbitrary single-qubit states
-* Implementing the standard measurement-based teleportation protocol
-* Introducing depolarizing noise
-* Studying bit-flip and phase-flip errors
-* Modeling imperfect quantum gates
-* Analyzing teleportation fidelity as a function of noise strength
-* Comparing ideal simulation with noisy simulation
-* Running the protocol on real quantum hardware
-* Studying teleportation as a primitive for larger quantum communication and networking systems
+### Arbitrary Input States
+
+Extend the experiment beyond the four predefined states and test arbitrary single-qubit states of the form
+
+$$
+|\psi\rangle =
+\alpha|0\rangle + \beta|1\rangle.
+$$
+
+### Noise Modeling
+
+Introduce realistic noise models such as:
+
+* Bit-flip noise
+* Phase-flip noise
+* Depolarizing noise
+* Gate errors
+
+Then investigate how teleportation fidelity changes as the noise strength increases.
+
+### Measurement-Based Teleportation
+
+Implement the standard operational teleportation protocol explicitly using:
+
+* Bell-basis measurements
+* Classical bits
+* Conditional corrections
+
+This would allow a direct comparison between the operational and coherent formulations.
+
+### Hardware Execution
+
+Run the teleportation circuit on real quantum hardware and compare experimental results with ideal simulation.
+
+### Quantum Networking
+
+Extend the protocol toward multi-node quantum communication scenarios, including:
+
+* Entanglement distribution
+* Entanglement swapping
+* Quantum network links
+* Fidelity degradation across multiple nodes
+* Resource and routing considerations
 
 ---
 
@@ -230,8 +417,17 @@ Possible extensions of the project include:
 M.Sc. Quantum Computing
 Computer Science · Quantum Communication · Quantum Networking
 
+Interested in:
+
+* Quantum Communication
+* Quantum Networking
+* Quantum Internet
+* Quantum Key Distribution
+* Quantum Optics
+* Photonic Quantum Systems
+
 ---
 
-## Topics
+## License
 
-`quantum-computing` `quantum-information` `quantum-teleportation` `qiskit` `quantum-simulation` `python`
+This project is released under the MIT License.
