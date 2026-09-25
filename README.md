@@ -64,22 +64,42 @@ Qubits 1 and 2 are first prepared in an entangled Bell state. The input qubit is
 
 The coherent circuit follows these main stages.
 
-### 1. Prepare the input state
+### 1. Prepare the Input State
 
 A single-qubit state is prepared on qubit 0.
 
-The project tests four standard states:
+The project tests four standard single-qubit states:
 
-| State | Physical meaning  | Category                  |                      |                                                  |                     |
-| ----- | ----------------- | ------------------------- | -------------------- | ------------------------------------------------ | ------------------- |
-| $     | 0\rangle$         | Computational basis state | Basis state          |                                                  |                     |
-| $     | 1\rangle$         | Computational basis state | Basis state          |                                                  |                     |
-| $     | +\rangle = \frac{ | 0\rangle +                | 1\rangle}{\sqrt{2}}$ | Equal superposition with positive relative phase | Superposition state |
-| $     | -\rangle = \frac{ | 0\rangle -                | 1\rangle}{\sqrt{2}}$ | Equal superposition with negative relative phase | Superposition state |
+| State       | Physical meaning                                 | Category            |
+| ----------- | ------------------------------------------------ | ------------------- |
+| Zero state  | Computational basis state                        | Basis state         |
+| One state   | Computational basis state                        | Basis state         |
+| Plus state  | Equal superposition with positive relative phase | Superposition state |
+| Minus state | Equal superposition with negative relative phase | Superposition state |
 
-These states allow the experiment to test both computational-basis states and phase-sensitive superposition states.
+The mathematical definitions of these states are:
 
-### 2. Create the Bell pair
+$$
+|0\rangle
+$$
+
+$$
+|1\rangle
+$$
+
+$$
+|+\rangle =
+\frac{|0\rangle + |1\rangle}{\sqrt{2}}
+$$
+
+$$
+|-\rangle =
+\frac{|0\rangle - |1\rangle}{\sqrt{2}}
+$$
+
+The first two are computational-basis states, while the last two are superposition states. The plus and minus states differ in their relative phase, making them useful for verifying that the teleportation protocol preserves quantum-state information beyond simple basis-state populations.
+
+### 2. Create the Bell Pair
 
 Qubits 1 and 2 are prepared in the Bell state
 
@@ -91,24 +111,22 @@ $$
 This is achieved using a Hadamard gate followed by a controlled-NOT gate:
 
 ```text
-H
-│
-Qubit 1 ─────●────
-             │
-Qubit 2 ─────X────
+Qubit 1 ─── H ───●───
+                 │
+Qubit 2 ─────────X───
 ```
 
-### 3. Apply the Bell-basis transformation
+### 3. Apply the Bell-Basis Transformation
 
 The input qubit and the sender's half of the Bell pair are transformed using controlled-NOT and Hadamard operations.
 
-### 4. Apply coherent corrections
+### 4. Apply Coherent Corrections
 
 The receiver's qubit is corrected using controlled quantum operations.
 
 These operations form a coherent equivalent of the conditional corrections that would normally depend on the classical measurement results in the standard teleportation protocol.
 
-### 5. Analyze the receiver's state
+### 5. Analyze the Receiver's State
 
 The final statevector is obtained from the ideal simulation.
 
@@ -157,12 +175,23 @@ Because this project uses an ideal noiseless simulation, the expected fidelity f
 
 The notebook evaluates the teleportation protocol for four different input states.
 
-| Experiment | Input state | What is being tested |                                Expected ideal fidelity |             |
-| ---------- | ----------- | -------------------- | -----------------------------------------------------: | ----------- |
-| 1          | $           | 0\rangle$            |           Teleportation of a computational-basis state | $\approx 1$ |
-| 2          | $           | 1\rangle$            |   Teleportation of the other computational-basis state | $\approx 1$ |
-| 3          | $           | +\rangle$            |          Teleportation of an equal superposition state | $\approx 1$ |
-| 4          | $           | -\rangle$            | Teleportation of a phase-sensitive superposition state | $\approx 1$ |
+| Experiment | Input state | What is being tested                                   | Expected ideal fidelity |
+| ---------: | ----------- | ------------------------------------------------------ | ----------------------: |
+|          1 | Zero state  | Teleportation of a computational-basis state           |         Approximately 1 |
+|          2 | One state   | Teleportation of the other computational-basis state   |         Approximately 1 |
+|          3 | Plus state  | Teleportation of an equal superposition state          |         Approximately 1 |
+|          4 | Minus state | Teleportation of a phase-sensitive superposition state |         Approximately 1 |
+
+The corresponding mathematical states are:
+
+| Experiment | Mathematical state |
+| ---------: | ------------------ |
+|          1 | Zero state         |
+|          2 | One state          |
+|          3 | Plus state         |
+|          4 | Minus state        |
+
+Their mathematical definitions are given above in the **Prepare the Input State** section.
 
 Testing multiple states is useful because successful teleportation should not depend on the particular input state chosen.
 
@@ -252,7 +281,7 @@ The approach is therefore suitable for this project as a first computational ver
 ## Technologies
 
 * **Python** — programming language
-* **Qiskit** — quantum circuit construction and simulation
+* **Qiskit** — quantum circuit construction and quantum-state analysis
 * **NumPy** — numerical computation
 * **Matplotlib** — visualization
 * **Jupyter Notebook** — interactive experiment environment
